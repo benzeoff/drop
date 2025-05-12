@@ -3,14 +3,29 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "watch": "webpack --watch"
     },
     "devDependencies": {
+        "@inertiajs/vue3": "^2.0.0",
+        "@tailwindcss/forms": "^0.5.3",
         "@tailwindcss/vite": "^4.0.0",
-        "axios": "^1.8.2",
+        "@vitejs/plugin-vue": "^5.0.0",
+        "autoprefixer": "^10.4.12",
+        "axios": "^1.9.0",
         "concurrently": "^9.0.1",
+        "laravel-mix": "^6.0.49",
         "laravel-vite-plugin": "^1.2.0",
-        "tailwindcss": "^4.0.0",
-        "vite": "^6.2.4"
+        "postcss": "^8.4.31",
+        "tailwindcss": "^3.2.1",
+        "vite": "^6.2.4",
+        "vue": "^3.4.0",
+        "webpack": "^5.99.7",
+        "webpack-cli": "^6.0.1"
+    },
+    "dependencies": {
+        "aos": "^2.3.4",
+        "dayjs": "^1.11.13",
+        "tournament-organizer": "^3.9.1"
     }
 }

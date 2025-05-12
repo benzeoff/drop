@@ -1,0 +1,25 @@
+@font-face {
+    font-family: "Drop";
+    src: url('../fonts/drop.ttf') format('truetype');
+    font-weight: 300;
+}
+.logo {
+    font-family: "Drop", sans-serif; /* Используем подключенный шрифт */
+    font-size: 48px; /* Размер шрифта, можно настроить под ваш дизайн */
+    color: #e0e0e0; /* Основной цвет текста, соответствует вашему дизайну */
+    line-height: 1; /* Для правильного выравнивания */
+}
+
+.drop-text {
+    display: inline-block; /* Для корректной работы трансформации */
+}
+
+.drop-o {
+    color: #ff4040; /* Красный цвет для буквы "o" */
+}
+
+@media (max-width: 768px) {
+    .logo {
+        font-size: 32px; /* Меньший размер для мобильных */
+    }
+}
