@@ -1,6 +1,5 @@
 <template>
     <Head title="Drop Cyber Lounge">
-        <!-- Подключение AOS CSS -->
         <link
             href="https://unpkg.com/aos@2.3.1/dist/aos.css"
             rel="stylesheet"
@@ -14,19 +13,20 @@
             <div class="logo transition-all hover:scale-105">
                 <span class="drop-text">dr<span class="drop-o">o</span>p</span>
             </div>
-            <nav v-if="canLogin" class="ml-auto space-x-4">
+            <nav v-if="canLogin" class="ml-auto flex items-center space-x-4">
                 <Link
                     :href="route('about')"
                     class="text-[#E0E0E0] hover:text-[#FF4040] px-3 py-2 rounded transition"
                 >
                     О клубе
                 </Link>
-                <Link
-                    :href="route('booking')"
+                <a
+                    href="#promotions"
+                    @click.prevent="scrollToPromotions"
                     class="text-[#E0E0E0] hover:text-[#FF4040] px-3 py-2 rounded transition"
                 >
-                    Бронирования
-                </Link>
+                    Акции
+                </a>
                 <Link
                     :href="route('tournaments')"
                     class="text-[#E0E0E0] hover:text-[#FF4040] px-3 py-2 rounded transition"
@@ -55,6 +55,32 @@
                         Регистрация
                     </Link>
                 </template>
+                <a
+                    href="tel:+79999999999"
+                    class="text-[#E0E0E0] hover:text-[#FF4040] px-3 py-2 rounded transition flex items-center gap-2"
+                >
+                    <svg
+                        width="30px"
+                        height="30px"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M6.02427 10.2591L13.7368 17.9716C15.4072 19.642 18.1154 19.642 19.7858 17.9716C20.4539 17.3035 20.4539 16.2202 19.7858 15.552L17.6434 13.4096C17.1562 12.9224 16.3663 12.9224 15.8791 13.4096C15.3919 13.8968 14.602 13.8968 14.1148 13.4096L10.2334 9.52819C9.74619 9.041 9.74619 8.25109 10.2334 7.7639C10.7206 7.2767 10.7206 6.4868 10.2334 5.9996L8.44388 4.2101C7.77573 3.54195 6.69243 3.54194 6.02428 4.2101C4.35389 5.88049 4.35389 8.58872 6.02427 10.2591Z"
+                            stroke="currentColor"
+                            stroke-width="1.6"
+                            class="my-path"
+                        />
+                    </svg>
+                    +7 (999) 999-99-99
+                </a>
+                <Link
+                    :href="route('booking')"
+                    class="text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900"
+                >
+                    Забронировать
+                </Link>
             </nav>
         </header>
 
@@ -236,7 +262,11 @@
             </section>
 
             <!-- Сетка "Акции" -->
-            <section class="bg-[#121212] py-12" data-aos="fade-up">
+            <section
+                id="promotions"
+                class="bg-[#121212] py-12"
+                data-aos="fade-up"
+            >
                 <div class="max-w-7xl mx-auto px-6 lg:px-12">
                     <h2 class="text-3xl font-bold text-center mb-8">Акции</h2>
                     <div
@@ -284,7 +314,7 @@
                 </div>
             </section>
 
-            <!-- Секция "Киберновости" -->
+            <!-- Остальные секции без изменений -->
             <section class="mt-12 mb-16">
                 <h2 class="text-2xl font-semibold text-center mb-6">
                     Киберновости
@@ -326,11 +356,10 @@
                 </div>
             </section>
 
-            <!-- Секция "Контакты" -->
             <section class="bg-[#181818] py-12 px-4 text-[#E0E0E0]">
                 <div class="max-w-7xl mx-auto">
                     <h2 class="text-3xl font-bold text-center mb-8">
-                        DROP CYBER Сыктывкар
+                        DROP СЫКТЫВКАР
                     </h2>
                     <div class="relative rounded-xl overflow-hidden">
                         <iframe
@@ -361,8 +390,9 @@
                                     href="https://yandex.ru/maps"
                                     target="_blank"
                                     class="text-[#40C4FF] underline hover:text-[#E0E0E0]"
-                                    >Построить маршрут</a
                                 >
+                                    Построить маршрут
+                                </a>
                             </div>
                             <div class="flex items-center gap-2">
                                 <svg
@@ -386,8 +416,9 @@
                                 <a
                                     href="tel:+79042068089"
                                     class="text-[#40C4FF] underline hover:text-[#E0E0E0]"
-                                    >+7 (904) 206-80-89</a
                                 >
+                                    +7 (904) 206-80-89
+                                </a>
                             </div>
                             <a
                                 href="https://taxi.yandex.ru"
@@ -401,7 +432,6 @@
                 </div>
             </section>
 
-            <!-- Секция "Комплектующие" -->
             <section class="mt-12 mb-16">
                 <h2 class="text-2xl font-semibold text-center mb-6">
                     Комплектующие
@@ -462,7 +492,6 @@
                 </div>
             </section>
 
-            <!-- Секция "Отзывы" -->
             <section
                 class="bg-[#181818] text-[#E0E0E0] py-24 relative overflow-hidden"
             >
@@ -549,7 +578,6 @@ onMounted(() => {
         currentYearRef.value.textContent = new Date().getFullYear();
     }
 
-    // Динамическая загрузка AOS
     const aosScript = document.createElement("script");
     aosScript.src = "https://unpkg.com/aos@2.3.1/dist/aos.js";
     aosScript.async = true;
@@ -586,7 +614,7 @@ const zones = [
     { key: "vip", label: "VIP" },
     { key: "bootcamp", label: "BOOTCAMP" },
     { key: "chill", label: "CHILL ZONE" },
-];
+];3333333333333333333333333333333
 
 const activeZone = ref("general");
 
@@ -599,5 +627,12 @@ function truncateDescription(description) {
     const sentences = description.split(". ").filter((s) => s.trim());
     if (sentences.length <= 2) return description;
     return sentences.slice(0, 2).join(". ") + ".";
+}
+
+function scrollToPromotions() {
+    const promotionsSection = document.getElementById("promotions");
+    if (promotionsSection) {
+        promotionsSection.scrollIntoView({ behavior: "smooth" });
+    }
 }
 </script>

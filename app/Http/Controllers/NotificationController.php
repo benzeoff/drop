@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
@@ -18,11 +19,14 @@ class NotificationController extends Controller
                     'id' => $notification->id,
                     'title' => $notification->title,
                     'message' => $notification->message,
-                    'read_at' => $notification->read_at,
-                    'created_at' => $notification->created_at->format('d.m.Y H:i'),
+                    'read_at' => $notification->read_at ? $notification->read_at->toISOString() : null,
+                    'created_at' => $notification->created_at->toISOString(),
                 ];
             });
-
+        Log::info('Notifications fetched', [
+            'user_id' => auth()->id(),
+            'count' => $notifications->count(),
+        ]);
         return Inertia::render('Notifications', [
             'notifications' => $notifications,
         ]);

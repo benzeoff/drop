@@ -66,6 +66,8 @@ const deleteNotification = async (notificationId) => {
         console.error("Ошибка при удалении уведомления:", error);
     }
 };
+
+console.log("Notifications:", props.notifications);
 </script>
 
 <template>

@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Log;
 class UsersRelationManager extends RelationManager
 {
     protected static string $relationship = 'users';
-
     protected static ?string $title = 'Участники';
 
     public function form(Form $form): Form
@@ -39,82 +38,73 @@ class UsersRelationManager extends RelationManager
                     ->label('Email')
                     ->searchable(),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->headerActions([
                 Tables\Actions\AttachAction::make()
                     ->label('Добавить участника')
                     ->preloadRecordSelect()
-                    ->after(function ($data, $livewire) {
+                    ->action(function ($data, $livewire) {
+                        Log::info('Attach action started', [
+                            'record_id' => $data['recordId'],
+                            'tournament_id' => $livewire->ownerRecord->id,
+                        ]);
+
                         $user = \App\Models\User::find($data['recordId']);
                         $tournament = $livewire->ownerRecord;
 
-                        Log::info('Attempting to attach user to tournament', [
-                            'user_id' => $data['recordId'],
-                            'tournament_id' => $tournament->id,
-                            'current_participants' => $tournament->users()->count(),
-                            'max_participants' => $tournament->max_participants,
-                        ]);
-
-                        // Проверка на максимальное количество участников
-                        if ($tournament->users()->count() >= $tournament->max_participants) {
-                            Log::info('Max participants reached for tournament', ['tournament_id' => $tournament->id]);
-                            Notification::make()
-                                ->title('Ошибка')
-                                ->body('Достигнуто максимальное количество участников.')
-                                ->danger()
-                                ->send();
-                            return;
-                        }
-
-                        // Проверка валидности пользователя и турнира
                         if (!$user || !$tournament) {
-                            Log::error('Invalid user or tournament', ['user' => $user, 'tournament' => $tournament]);
-                            Notification::make()
-                                ->title('Ошибка')
-                                ->body('Недопустимый пользователь или турнир.')
-                                ->danger()
-                                ->send();
-                            return;
-                        }
-
-                        // Привязка пользователя к турниру
-                        $tournament->users()->attach($user->id);
-                        Log::info('User attached to tournament', ['user_id' => $user->id, 'tournament_id' => $tournament->id]);
-
-                        // Создание уведомления с обработкой ошибок
-                        try {
-                            Notification::create([
-                                'user_id' => $user->id,
-                                'title' => 'Регистрация на турнир: ' . $tournament->name,
-                                'message' => "Вы успешно зарегистрированы на турнир: {$tournament->name}. Игра: {$tournament->game}. Дата: {$tournament->date->format('d.m.Y H:i')}.",
+                            Log::error('Invalid user or tournament', [
+                                'user_id' => $data['recordId'],
+                                'tournament_id' => $tournament ? $tournament->id : null,
                             ]);
-                            Log::info('Notification created successfully', ['user_id' => $user->id]);
-                        } catch (\Exception $e) {
-                            Log::error('Failed to create notification', ['error' => $e->getMessage()]);
                             Notification::make()
                                 ->title('Ошибка')
-                                ->body('Не удалось создать уведомление: ' . $e->getMessage())
+                                ->body('Пользователь или турнир не найдены.')
                                 ->danger()
                                 ->send();
                             return;
                         }
 
-                        Notification::make()
-                            ->title('Успех')
-                            ->body('Участник добавлен, уведомление отправлено.')
-                            ->success()
-                            ->send();
+                        try {
+                            $tournament->users()->syncWithoutDetaching($user->id);
+                            Log::info('User attached to tournament', [
+                                'user_id' => $user->id,
+                                'tournament_id' => $tournament->id,
+                            ]);
+
+                            $notification = UserNotification::create([
+                                'user_id' => $user->id,
+                                'title' => 'Регистрация на турнир',
+                                'message' => "Вы зарегистрированы на турнир {$tournament->name}.",
+                            ]);
+                            Log::info('Notification created', [
+                                'notification_id' => $notification->id,
+                                'user_id' => $user->id,
+                            ]);
+
+                            Notification::make()
+                                ->title('Успех')
+                                ->body('Участник добавлен и уведомление создано.')
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
+                            Log::error('Error in attach action', [
+                                'error' => $e->getMessage(),
+                                'trace' => $e->getTraceAsString(),
+                            ]);
+                            Notification::make()
+                                ->title('Ошибка')
+                                ->body('Ошибка: ' . $e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
                     }),
             ])
             ->actions([
-                Tables\Actions\DetachAction::make()
-                    ->label('Удалить'),
+                Tables\Actions\DetachAction::make()->label('Удалить'),
             ])
             ->bulkActions([
-                Tables\Actions\DetachBulkAction::make()
-                    ->label('Удалить выбранных'),
+                Tables\Actions\DetachBulkAction::make()->label('Удалить выбранных'),
             ]);
     }
 }
