@@ -12,6 +12,12 @@ class Booking extends Model
 
     protected $appends = ['status'];
 
+    protected $casts = [
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
+        'price' => 'decimal:2',
+    ];
+
     public function resource()
     {
         return $this->belongsTo(Resource::class);

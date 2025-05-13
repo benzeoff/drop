@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -16,6 +17,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     protected $hidden = [
@@ -45,5 +47,11 @@ class User extends Authenticatable
     public function getUnreadNotificationsCountAttribute()
     {
         return $this->notifications()->whereNull('read_at')->count();
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // Доступ только для пользователей с ролью 'admin'
+        return $this->role === 'admin';
     }
 }
