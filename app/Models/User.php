@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Booking;
+use App\Models\Tournament;
+use App\Models\Notification;
+use App\Models\Team;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -29,12 +33,12 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function bookings()
+    public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
     }
 
-    public function tournaments()
+    public function tournaments(): BelongsToMany
     {
         return $this->belongsToMany(Tournament::class);
     }
@@ -49,9 +53,13 @@ class User extends Authenticatable
         return $this->notifications()->whereNull('read_at')->count();
     }
 
+    public function teams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class)->withTimestamps();
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
-        // Доступ только для пользователей с ролью 'admin'
         return $this->role === 'admin';
     }
 }

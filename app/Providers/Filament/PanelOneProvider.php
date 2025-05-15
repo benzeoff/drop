@@ -28,7 +28,7 @@ class PanelOneProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => Color::Red, // Используем красный в соответствии с вашей темой
+                'primary' => Color::Red,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -50,6 +50,7 @@ class PanelOneProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                \App\Http\Middleware\Admin::class, // Добавляем ваш middleware
             ])
             ->authMiddleware([
                 Authenticate::class,

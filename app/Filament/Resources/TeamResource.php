@@ -61,20 +61,6 @@ class TournamentResource extends Resource
                     ])
                     ->default('1v1')
                     ->required(),
-                // Only show user selection for 1v1 mode
-                Forms\Components\Select::make('users')
-                    ->label('Участники (для режима 1v1)')
-                    ->multiple()
-                    ->relationship('users', 'name')
-                    ->preload()
-                    ->visible(fn($get) => $get('mode') === '1v1'),
-                // Only show team selection for team mode
-                Forms\Components\Select::make('teams')
-                    ->label('Команды (для режима Команда против команды)')
-                    ->multiple()
-                    ->relationship('teams', 'name')
-                    ->preload()
-                    ->visible(fn($get) => $get('mode') === 'team'),
             ]);
     }
 
@@ -158,30 +144,8 @@ class TournamentResource extends Resource
                             }
                             \App\Models\GameMatch::insert($matches);
                         } else {
-                            $teams = $tournament->teams()->pluck('teams.id')->shuffle()->toArray();
-                            if (count($teams) < 2) {
-                                Notification::make()
-                                    ->title('Ошибка')
-                                    ->body('Недостаточно команд для генерации матчей.')
-                                    ->danger()
-                                    ->send();
-                                return;
-                            }
-
-                            $matches = [];
-                            for ($i = 0; $i < count($teams); $i += 2) {
-                                if (isset($teams[$i + 1])) {
-                                    $matches[] = [
-                                        'tournament_id' => $tournament->id,
-                                        'team1_id' => $teams[$i],
-                                        'team2_id' => $teams[$i + 1],
-                                        'status' => 'pending',
-                                        'created_at' => now(),
-                                        'updated_at' => now(),
-                                    ];
-                                }
-                            }
-                            \App\Models\GameMatch::insert($matches);
+                            // Для команд перенаправляем на форму выбора пар
+                            return redirect()->route('filament.resources.tournaments.create-matches', $tournament->id);
                         }
 
                         Notification::make()
@@ -207,7 +171,6 @@ class TournamentResource extends Resource
             RelationManagers\UsersRelationManager::class,
             RelationManagers\MatchesRelationManager::class,
             RelationManagers\ResourcesRelationManager::class,
-            RelationManagers\ApplicationsRelationManager::class,
         ];
     }
 
@@ -217,6 +180,7 @@ class TournamentResource extends Resource
             'index' => Pages\ListTournaments::route('/'),
             'create' => Pages\CreateTournament::route('/create'),
             'edit' => Pages\EditTournament::route('/{record}/edit'),
+            'create-matches' => Pages\CreateMatches::route('/{record}/create-matches'),
         ];
     }
 }
