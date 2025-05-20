@@ -7,11 +7,13 @@ use App\Filament\Resources\PromotionResource\RelationManagers;
 use App\Models\Promotion;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Mohamedsabil83\FilamentFormsTinyeditor\Components\TinyEditor;
 
 class PromotionResource extends Resource
 {
@@ -19,18 +21,36 @@ class PromotionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-ticket';
 
+    protected static ?string $navigationLabel = 'Акции';
+
+    protected static ?string $modelLabel = 'Акции';
+
+    protected static ?string $pluralModelLabel = 'Акции';
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('title')
+                    ->label('Название')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Textarea::make('description')
+                TinyEditor::make('description')
+                    ->label('Описание')
                     ->required(),
                 Forms\Components\FileUpload::make('image')
+                    ->label('Изображение')
                     ->image()
-                    ->directory('promotions'),
+                    ->directory('promotions')
+                    ->disk('public')
+                    ->visibility('public')
+                    ->imageEditor()
+                    ->imageEditorMode(2)
+                    ->openable()
+                    ->downloadable()
+                    ->deletable()
+                    ->required()
+                    ->fetchFileInformation(),
                 Forms\Components\Select::make('tournament_id')
                     ->label('Турнир')
                     ->relationship('tournament', 'name')
@@ -42,9 +62,12 @@ class PromotionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title'),
-                Tables\Columns\TextColumn::make('description')->limit(50),
-                Tables\Columns\ImageColumn::make('image'),
+                Tables\Columns\TextColumn::make('title')
+                    ->label('Название'),
+                Tables\Columns\TextColumn::make('description')->limit(50)
+                    ->label('Описание'),
+                Tables\Columns\ImageColumn::make('image')
+                    ->label('Изображение')
             ])
             ->filters([
                 //

@@ -205,6 +205,7 @@ class TournamentResource extends Resource
     {
         return [
             RelationManagers\UsersRelationManager::class,
+            RelationManagers\TeamsRelationManager::class, // Add the new TeamsRelationManager
             RelationManagers\MatchesRelationManager::class,
             RelationManagers\ResourcesRelationManager::class,
             RelationManagers\ApplicationsRelationManager::class,

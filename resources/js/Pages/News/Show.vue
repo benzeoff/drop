@@ -71,46 +71,7 @@
             </div>
         </main>
 
-        <footer class="bg-[#FF2D20] text-white p-6 text-center">
-            <div
-                class="flex flex-col lg:flex-row justify-between items-center gap-6"
-            >
-                <div>
-                    <iframe
-                        src="https://yandex.ru/map-widget/v1/?ll=50.826198%2C61.677702&mode=poi&poi%5Bpoint%5D=50.825564%2C61.677702&poi%5Buri%5D=ymapsbm1%3A%2F%2Forg%3Foid%3D232821190503&z=18.6"
-                        width="300"
-                        height="200"
-                        frameborder="0"
-                        class="rounded-lg"
-                    ></iframe>
-                </div>
-                <div class="flex flex-col items-center gap-4">
-                    <div class="flex items-center gap-2">
-                        <img
-                            src="/images/social/tel.png"
-                            alt="Phone Icon"
-                            class="w-6 h-6"
-                        />
-                        <a
-                            href="tel:+79042068089"
-                            class="underline hover:text-white"
-                        >
-                            +7 (904) 206-80-89
-                        </a>
-                    </div>
-                    <a
-                        href="https://vk.com/dropgames11?from=groups"
-                        target="_blank"
-                        class="flex items-center gap-2"
-                    >
-                        <img
-                            src="/images/social/vk.png"
-                            alt="VK Icon"
-                            class="w-6 h-6"
-                        />
-                    </a>
-                </div>
-            </div>
+        <footer class="text-white p-6 text-center">
             <div class="mt-6">
                 Компьютерный клуб © <span ref="currentYearRef"></span>
             </div>

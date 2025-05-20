@@ -11,6 +11,7 @@ class PromotionController extends Controller
     public function show(Promotion $promotion)
     {
         $promotion->image = $promotion->image ? asset('storage/' . $promotion->image) : null;
+
         return Inertia::render('Promotions/Show', [
             'promotion' => $promotion,
             'canLogin' => Route::has('login'),

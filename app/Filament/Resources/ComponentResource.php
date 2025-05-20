@@ -10,6 +10,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Mohamedsabil83\FilamentFormsTinyeditor\Components\TinyEditor;
 
 class ComponentResource extends Resource
 {
@@ -17,19 +18,27 @@ class ComponentResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-computer-desktop';
 
+    protected static ?string $navigationLabel = 'Комплектующие';
+
+    protected static ?string $modelLabel = 'Комплектующие';
+
+    protected static ?string $pluralModelLabel = 'Комплектующие';
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('title')
+                    ->label('Название')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Textarea::make('description')
+                TinyEditor::make('description')
+                    ->label('Описание')
                     ->required()
                     ->maxLength(65535)
                     ->columnSpanFull(),
                 Forms\Components\Select::make('zone')
-                    ->label('Зона')
+                    ->label('Зал')
                     ->options([
                         'general' => 'Общий зал',
                         'vip' => 'VIP',
@@ -38,6 +47,7 @@ class ComponentResource extends Resource
                     ])
                     ->required(),
                 Forms\Components\FileUpload::make('image')
+                    ->label('Изображение')
                     ->image()
                     ->directory('components')
                     ->required(),
@@ -49,11 +59,13 @@ class ComponentResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')
+                    ->label('Название')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('description')
+                    ->label('Описание')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('zone')
-                    ->label('Зона')
+                    ->label('Зал')
                     ->formatStateUsing(fn(string $state): string => match ($state) {
                         'general' => 'Общий зал',
                         'vip' => 'VIP',
@@ -61,11 +73,14 @@ class ComponentResource extends Resource
                         'chill' => 'CHILL ZONE',
                         default => $state,
                     }),
-                Tables\Columns\ImageColumn::make('image'),
+                Tables\Columns\ImageColumn::make('image')
+                    ->label('Изображение'),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Создано')
                     ->dateTime()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Обновлено')
                     ->dateTime()
                     ->sortable(),
             ])

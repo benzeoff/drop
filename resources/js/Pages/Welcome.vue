@@ -86,7 +86,7 @@
 
         <main class="flex-grow p-6 lg:p-12">
             <div class="grid gap-6 lg:grid-cols-2 lg:gap-8">
-                <!-- Карточки "О клубе", "Бронирования", "Турниры" -->
+                <!-- Карточка "Магазин" -->
                 <div
                     class="rounded-lg p-6 shadow-lg"
                     style="
@@ -96,27 +96,25 @@
                     "
                 >
                     <img
-                        src="/images/drop-zal1.png"
-                        alt="Drop Cyber Lounge"
-                        class="w-full h-48 object-cover rounded-t-lg"
+                        src="/images/store.png"
+                        alt="Store"
+                        class="w-full aspect-video object-contain"
                     />
                     <div class="p-4">
-                        <h2 class="text-xl font-semibold">
-                            Добро пожаловать в Drop!
-                        </h2>
+                        <h2 class="text-xl font-semibold">Магазин</h2>
                         <p class="mt-2 text-sm text-[#A0A0A0]">
-                            Кибер-лаундж Drop — это 20 мощных ПК с RTX 3070, 144
-                            Гц мониторами и круглосуточным доступом. Бронируй
-                            место и участвуй в турнирах!
+                            Зарабатывай баллы в викторинах и обменивай их на
+                            время игры или другие награды!
                         </p>
                         <Link
-                            :href="route('about')"
+                            :href="route('store')"
                             class="mt-4 inline-block bg-[#FF4040] text-[#E0E0E0] px-4 py-2 rounded hover:bg-[#CC3333] transition"
                         >
-                            Узнать больше
+                            Перейти в магазин
                         </Link>
                     </div>
                 </div>
+                <!-- Карточка "Игры" -->
                 <div
                     class="rounded-lg p-6 shadow-lg"
                     style="
@@ -126,48 +124,21 @@
                     "
                 >
                     <img
-                        src="/images/booking.jpg"
-                        alt="Booking"
-                        class="w-full h-48 object-cover rounded-t-lg"
+                        src="/images/game.png"
+                        alt="Games"
+                        class="w-full aspect-video object-contain"
                     />
                     <div class="p-4">
-                        <h2 class="text-xl font-semibold">Забронировать</h2>
+                        <h2 class="text-xl font-semibold">Игры</h2>
                         <p class="mt-2 text-sm text-[#A0A0A0]">
-                            Выберите удобную дату и время, а также нужное
-                            оборудование для комфортной игры.
+                            Пройди киберспортивную викторину и получи баллы для
+                            магазина!
                         </p>
                         <Link
-                            :href="route('booking')"
+                            :href="route('games')"
                             class="mt-4 inline-block bg-[#FF4040] text-[#E0E0E0] px-4 py-2 rounded hover:bg-[#CC3333] transition"
                         >
-                            Бронировать
-                        </Link>
-                    </div>
-                </div>
-                <div
-                    class="rounded-lg p-6 shadow-lg"
-                    style="
-                        background: rgba(30, 30, 30, 0.7);
-                        backdrop-filter: blur(10px);
-                        -webkit-backdrop-filter: blur(10px);
-                    "
-                >
-                    <img
-                        src="/images/tournament.jpg"
-                        alt="Tournaments"
-                        class="w-full h-48 object-cover rounded-t-lg"
-                    />
-                    <div class="p-4">
-                        <h2 class="text-xl font-semibold">Турниры</h2>
-                        <p class="mt-2 text-sm text-[#A0A0A0]">
-                            Участвуй в турнирах по CS:GO, Dota 2 и другим играм.
-                            Выигрывай призы!
-                        </p>
-                        <Link
-                            :href="route('tournaments')"
-                            class="mt-4 inline-block bg-[#FF4040] text-[#E0E0E0] px-4 py-2 rounded hover:bg-[#CC3333] transition"
-                        >
-                            Подробнее
+                            Играть
                         </Link>
                     </div>
                 </div>
@@ -176,25 +147,25 @@
             <!-- Слайдер "Популярные игры" -->
             <section class="mt-12" data-aos="fade-up">
                 <h2 class="text-2xl font-semibold text-center mb-6">
-                    Популярные игры в Drop
+                    Популярные игры в клубе
                 </h2>
                 <div class="relative">
                     <div class="overflow-hidden">
                         <div
-                            class="flex transition-transform duration-300 ease-in-out"
+                            class="flex transition-transform duration-300 ease-in-out gap-2"
                             :style="{
                                 transform: `translateX(-${
-                                    currentGameIndex * 50
+                                    currentGameIndex * (100 / 3)
                                 }%)`,
                             }"
                         >
                             <div
                                 v-for="(game, index) in games"
                                 :key="index"
-                                class="min-w-[50%] flex justify-center"
+                                class="min-w-[33.333%] flex justify-center"
                             >
                                 <div
-                                    class="rounded-lg p-4 w-full max-w-md mx-2 shadow-lg"
+                                    class="rounded-lg p-4 w-full max-w-md shadow-lg"
                                     style="
                                         background: rgba(30, 30, 30, 0.7);
                                         backdrop-filter: blur(10px);
@@ -294,8 +265,12 @@
                                 <h3 class="text-xl font-semibold mb-2">
                                     {{ promotion.title }}
                                 </h3>
-                                <p class="text-[#A0A0A0] mb-4">
-                                    {{ promotion.description }}
+                                <p class="text-[#A0A0A0] mb-4 text-sm">
+                                    {{
+                                        truncateDescription(
+                                            promotion.description
+                                        )
+                                    }}
                                 </p>
                                 <Link
                                     :href="
@@ -314,7 +289,7 @@
                 </div>
             </section>
 
-            <!-- Остальные секции без изменений -->
+            <!-- Секция "Киберновости" -->
             <section class="mt-12 mb-16">
                 <h2 class="text-2xl font-semibold text-center mb-6">
                     Киберновости
@@ -356,6 +331,7 @@
                 </div>
             </section>
 
+            <!-- Секция с картой -->
             <section class="bg-[#181818] py-12 px-4 text-[#E0E0E0]">
                 <div class="max-w-7xl mx-auto">
                     <h2 class="text-3xl font-bold text-center mb-8">
@@ -372,6 +348,7 @@
                         <div
                             class="absolute top-4 left-4 bg-[#1E1E1E] text-[#E0E0E0] rounded-lg shadow-lg px-6 py-4 flex flex-col lg:flex-row items-center gap-4 z-10"
                         >
+                            <!-- Новая иконка: MapPin -->
                             <div class="flex items-center gap-2">
                                 <svg
                                     class="w-5 h-5 text-[#E0E0E0]"
@@ -383,7 +360,12 @@
                                     <path
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
-                                        d="M17.657 16.657L13.414 12.414M12 21c-4.97 0-9-4.03-9-9s4.03-9 9-9 9 4.03 9 9c0 1.657-.457 3.21-1.243 4.536"
+                                        d="M12 11a4 4 0 100-8 4 4 0 000 8z"
+                                    />
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M12 22s8-4.5 8-10a8 8 0 10-16 0c0 5.5 8 10 8 10z"
                                     />
                                 </svg>
                                 <a
@@ -394,6 +376,8 @@
                                     Построить маршрут
                                 </a>
                             </div>
+
+                            <!-- Новая иконка: Phone -->
                             <div class="flex items-center gap-2">
                                 <svg
                                     class="w-5 h-5 text-[#E0E0E0]"
@@ -405,21 +389,17 @@
                                     <path
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
-                                        d="M3 5a2 2 0 012-2h3.586a1 1 0 01.707.293l1.414 1.414A1 1 0 0012.414 5H19a2 2 0 012 2v2"
-                                    />
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M17 16l-4-4m0 0l-4 4m4-4v9"
+                                        d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 013.08 4.18 2 2 0 015 2h3a2 2 0 012 1.72 12.22 12.22 0 00.57 2.57 2 2 0 01-.45 2.11l-1.27 1.27a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.22 12.22 0 002.57.57A2 2 0 0122 16.92z"
                                     />
                                 </svg>
                                 <a
                                     href="tel:+79042068089"
                                     class="text-[#40C4FF] underline hover:text-[#E0E0E0]"
                                 >
-                                    +7 (904) 206-80-89
+                                    +7 (999) 999-99-99
                                 </a>
                             </div>
+
                             <a
                                 href="https://taxi.yandex.ru"
                                 target="_blank"
@@ -432,6 +412,7 @@
                 </div>
             </section>
 
+            <!-- Секция "Комплектующие" -->
             <section class="mt-12 mb-16">
                 <h2 class="text-2xl font-semibold text-center mb-6">
                     Комплектующие
@@ -466,23 +447,16 @@
                             <img
                                 :src="component.image"
                                 :alt="component.title"
-                                class="w-full h-48 object-cover rounded-t-lg"
+                                class="w-full aspect-video object-contain"
                             />
                             <div class="p-4">
                                 <h3 class="text-lg font-semibold">
                                     {{ component.title }}
                                 </h3>
-                                <p class="mt-2 text-sm text-[#A0A0A0]">
-                                    {{ component.description }}
-                                </p>
-                                <Link
-                                    :href="
-                                        route('components.show', component.id)
-                                    "
-                                    class="mt-4 inline-block bg-[#FF4040] text-[#E0E0E0] px-4 py-2 rounded hover:bg-[#CC3333] transition"
-                                >
-                                    Подробнее
-                                </Link>
+                                <div
+                                    class="mt-2 text-sm text-[#A0A0A0] space-y-2"
+                                    v-html="component.description"
+                                ></div>
                             </div>
                         </div>
                     </div>
@@ -492,11 +466,12 @@
                 </div>
             </section>
 
+            <!-- Секция "Отзывы" -->
             <section
                 class="bg-[#181818] text-[#E0E0E0] py-24 relative overflow-hidden"
             >
                 <div
-                    class="absolute top-0 left-0 w-1/2 h-4 bg-[repeating-linear-gradient(-45deg,#40C4FF_0_10px,#181818_10px_20px)] z-10"
+                    class="absolute top-0 left-0 w-1/2 h-4 bg-[repeating-linear-gradient(-45deg,#A0A0A0_0_10px,#181818_10px_20px)] z-10"
                 ></div>
                 <div class="relative z-20 max-w-7xl mx-auto px-6 lg:px-12">
                     <div
@@ -509,7 +484,7 @@
                                 <a
                                     href="https://yandex.ru/maps/org/drop/232821190503/?ll=50.825493%2C61.677873&z=17"
                                     target="_blank"
-                                    class="bg-[#1E1E1E] text-[#E0E0E0] px-8 py-4 rounded-md text-xl font-semibold hover:bg-[#2A2A2A] transition shadow-md flex items-center gap-3"
+                                    class="bg-[#E0E0E0] text-[#E0E0E0] px-8 py-4 rounded-md text-xl font-semibold hover:bg-[#2A2A2A] transition shadow-md flex items-center gap-3"
                                 >
                                     <img
                                         src="/images/social/yandex-logo.svg"
@@ -520,7 +495,7 @@
                                 <a
                                     href="https://2gis.ru/syktyvkar/firm/70000001038697049"
                                     target="_blank"
-                                    class="bg-[#1E1E1E] text-[#E0E0E0] px-8 py-4 rounded-md text-xl font-semibold hover:bg-[#2A2A2A] transition shadow-md flex items-center gap-3"
+                                    class="bg-[#E0E0E0] text-[#E0E0E0] px-8 py-4 rounded-md text-xl font-semibold hover:bg-[#2A2A2A] transition shadow-md flex items-center gap-3"
                                 >
                                     <img
                                         src="/images/social/2gis-logo.svg"
@@ -531,19 +506,19 @@
                             </div>
                         </div>
                         <div
-                            class="text-[#40C4FF] text-4xl font-bold self-center hidden lg:block"
+                            class="text-[#A0A0A0] text-4xl font-bold self-center hidden lg:block"
                         >
                             ★★★★★
                         </div>
                     </div>
                 </div>
                 <div
-                    class="absolute bottom-0 right-0 w-1/2 h-4 bg-[repeating-linear-gradient(-45deg,#40C4FF_0_10px,#181818_10px_20px)] z-10"
+                    class="absolute bottom-0 right-0 w-1/2 h-4 bg-[repeating-linear-gradient(-45deg,#A0A0A0_0_10px,#181818_10px_20px)] z-10"
                 ></div>
             </section>
         </main>
 
-        <footer class="bg-[#181818] text-[#E0E0E0] p-6 text-center">
+        <footer class="text-[#E0E0E0] p-6 text-center">
             <div class="mt-6">
                 Компьютерный клуб © <span ref="currentYearRef"></span>
             </div>
@@ -598,7 +573,7 @@ const games = ref([
     { name: "GTA V", image: "/images/game/gta.png" },
 ]);
 const currentGameIndex = ref(0);
-const gamesPerSlide = 2;
+const gamesPerSlide = 3;
 
 function prevGame() {
     currentGameIndex.value = Math.max(currentGameIndex.value - 1, 0);
@@ -614,8 +589,7 @@ const zones = [
     { key: "vip", label: "VIP" },
     { key: "bootcamp", label: "BOOTCAMP" },
     { key: "chill", label: "CHILL ZONE" },
-];3333333333333333333333333333333
-
+];
 const activeZone = ref("general");
 
 function formatDate(dateString) {
@@ -625,8 +599,8 @@ function formatDate(dateString) {
 function truncateDescription(description) {
     if (!description) return "";
     const sentences = description.split(". ").filter((s) => s.trim());
-    if (sentences.length <= 2) return description;
-    return sentences.slice(0, 2).join(". ") + ".";
+    if (sentences.length === 0) return "";
+    return sentences[0] + ".";
 }
 
 function scrollToPromotions() {

@@ -14,6 +14,12 @@ class UsersRelationManager extends RelationManager
 
     protected static ?string $title = 'Участники';
 
+    // Only show this relation manager for 1v1 mode tournaments
+    public static function canViewForRecord($ownerRecord, $pageClass): bool
+    {
+        return $ownerRecord->mode === '1v1';
+    }
+
     public function form(Form $form): Form
     {
         return $form

@@ -16,11 +16,18 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
+    protected static ?string $navigationLabel = 'Пользователи';
+
+    protected static ?string $modelLabel = 'Пользовтели';
+
+    protected static ?string $pluralModelLabel = 'Пользовтели';
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
+                    ->label('Имя')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
@@ -33,6 +40,7 @@ class UserResource extends Resource
                     ->minLength(8)
                     ->visibleOn('create'), // Пароль виден только при создании
                 Forms\Components\Select::make('role')
+                    ->label('Роль')
                     ->options([
                         'user' => 'User',
                         'admin' => 'Admin',
@@ -47,17 +55,21 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Имя')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('role')
+                    ->label('Роль')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Создан')
                     ->dateTime()
                     ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('role')
+                    ->label('Роль')
                     ->options([
                         'user' => 'User',
                         'admin' => 'Admin',

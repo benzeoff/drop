@@ -8,30 +8,17 @@ use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\NotificationController;
-use App\Models\Computer;
-use App\Models\Pricing;
-use App\Models\Zone;
+use App\Http\Controllers\QuizController;
+use App\Http\Controllers\StoreController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', [WelcomeController::class, '__invoke'])->name('welcome');
 
-Route::get('/dashboard', function () {
-    $user = auth()->user();
-    if (!$user) {
-        return redirect()->route('login')->with('error', 'Пожалуйста, войдите в систему.');
-    }
-    $user->load(['bookings' => function ($query) {
-        $query->with('resource');
-    }, 'teams' => function ($query) {
-        $query->with('users', 'captain');
-    }]);
-    return Inertia::render('Dashboard', [
-        'bookings' => $user->bookings,
-        'teams' => $user->teams,
-        'tournaments' => \App\Models\Tournament::where('mode', 'team')->get(),
-    ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Переносим маршрут /dashboard в ProfileController
+Route::get('/dashboard', [ProfileController::class, 'dashboard'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -60,6 +47,7 @@ Route::get('/about', function () {
     ]);
 })->name('about');
 
+// Booking routes
 Route::get('/booking', [BookingController::class, 'index'])->name('booking');
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store')->middleware('auth');
 
@@ -92,6 +80,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::put('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+});
+
+// Quiz and Store routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/games', [QuizController::class, 'index'])->name('games');
+    Route::post('/games/quiz/submit', [QuizController::class, 'submit'])->name('games.quiz.submit');
+    Route::get('/store', [StoreController::class, 'index'])->name('store');
+    Route::post('/store/purchase', [StoreController::class, 'purchase'])->name('store.purchase');
 });
 
 require __DIR__ . '/auth.php';

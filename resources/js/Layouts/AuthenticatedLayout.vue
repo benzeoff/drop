@@ -11,7 +11,8 @@ import { Link } from "@inertiajs/vue3";
 const showingNavigationDropdown = ref(false);
 
 const page = usePage();
-const auth = page.props.auth;
+const auth = page.props.auth || { user: null };
+// console.log("AuthenticatedLayout props:", page.props.auth); // Отладка (оставьте, если нужно)
 </script>
 
 <template>
@@ -56,7 +57,7 @@ const auth = page.props.auth;
                                                 type="button"
                                                 class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                             >
-                                                {{ auth.user.name }}
+                                                {{ auth.user.name || "Гость" }}
 
                                                 <svg
                                                     class="-me-0.5 ms-2 h-4 w-4"
@@ -91,7 +92,12 @@ const auth = page.props.auth;
                                 </Dropdown>
                             </div>
                             <div v-else class="text-gray-500">
-                                Пользователь не аутентифицирован
+                                <Link
+                                    :href="route('login')"
+                                    class="text-gray-500 hover:text-gray-700"
+                                >
+                                    Войдите для доступа
+                                </Link>
                             </div>
                         </div>
 
@@ -162,17 +168,22 @@ const auth = page.props.auth;
                     <div class="border-t border-gray-200 pb-1 pt-4">
                         <div v-if="auth?.user" class="px-4">
                             <div class="text-base font-medium text-gray-800">
-                                {{ auth.user.name }}
+                                {{ auth.user.name || "Гость" }}
                             </div>
                             <div class="text-sm font-medium text-gray-500">
-                                {{ auth.user.email }}
+                                {{ auth.user.email || "Не указан" }}
                             </div>
                         </div>
                         <div v-else class="px-4 text-gray-500">
-                            Пользователь не аутентифицирован
+                            <Link
+                                :href="route('login')"
+                                class="text-gray-500 hover:text-gray-700"
+                            >
+                                Войдите для доступа
+                            </Link>
                         </div>
 
-                        <div class="mt-3 space-y-1">
+                        <div class="mt-3 space-y-1" v-if="auth?.user">
                             <ResponsiveNavLink :href="route('profile.edit')">
                                 Настройки
                             </ResponsiveNavLink>

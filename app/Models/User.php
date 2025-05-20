@@ -62,4 +62,19 @@ class User extends Authenticatable
     {
         return $this->role === 'admin';
     }
+
+    public function points()
+    {
+        return $this->hasOne(UserPoint::class);
+    }
+
+    public function quizAttempts()
+    {
+        return $this->hasMany(QuizAttempt::class);
+    }
+
+    public function storePurchases()
+    {
+        return $this->hasMany(StorePurchase::class);
+    }
 }

@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Mohamedsabil83\FilamentFormsTinyeditor\Components\TinyEditor;
 
 class CyberNewsResource extends Resource
 {
@@ -19,16 +20,25 @@ class CyberNewsResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-newspaper';
 
+    protected static ?string $navigationLabel = 'Новости';
+
+    protected static ?string $modelLabel = 'Новости';
+
+    protected static ?string $pluralModelLabel = 'Новости';
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('title')
+                    ->label('Название')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Textarea::make('description')
+                TinyEditor::make('description')
+                    ->label('Описание')
                     ->required(),
                 Forms\Components\FileUpload::make('image')
+                    ->label('Изображение')
                     ->image()
                     ->directory('news'),
             ]);
@@ -38,9 +48,12 @@ class CyberNewsResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title'),
-                Tables\Columns\TextColumn::make('description')->limit(50),
-                Tables\Columns\ImageColumn::make('image'),
+                Tables\Columns\TextColumn::make('title')
+                    ->label('Название'),
+                Tables\Columns\TextColumn::make('description')->limit(50)
+                    ->label('Описание'),
+                Tables\Columns\ImageColumn::make('image')
+                    ->label('Изображение'),
             ])
             ->filters([
                 //

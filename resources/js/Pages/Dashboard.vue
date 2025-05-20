@@ -3,17 +3,31 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head, useForm } from "@inertiajs/vue3";
 import { ref, onMounted, computed } from "vue";
 
-// Получаем данные из пропсов
+// Получаем данные из пропсов с проверкой типов
 const props = defineProps({
-    auth: Object,
-    bookings: Array,
-    teams: Array,
-    tournaments: Array,
+    auth: {
+        type: Object,
+        default: () => ({ user: null }),
+    },
+    bookings: {
+        type: Array,
+        default: () => [],
+    },
+    teams: {
+        type: Array,
+        default: () => [],
+    },
+    tournaments: {
+        type: Array,
+        default: () => [],
+    },
 });
 
+console.log("Dashboard props:", props); // Отладка (оставьте, если нужно)
+
 // Реактивные данные для бронирований и команд
-const bookings = ref(props.bookings || []);
-const teams = ref(props.teams || []);
+const bookings = ref(props.bookings);
+const teams = ref(props.teams);
 const selectedTeamId = ref(null);
 
 onMounted(() => {
@@ -23,10 +37,12 @@ onMounted(() => {
 
 // Фильтрация активных и завершённых бронирований
 const activeBookings = computed(() =>
-    bookings.value.filter((b) => b.status === "confirmed")
+    bookings.value.filter((b) => b?.status === "confirmed")
 );
 const completedBookings = computed(() =>
-    bookings.value.filter((b) => ["completed", "cancelled"].includes(b.status))
+    bookings.value.filter(
+        (b) => b?.status && ["completed", "cancelled"].includes(b.status)
+    )
 );
 
 // Форма для продления бронирования
@@ -37,26 +53,40 @@ const extendForm = useForm({
 // Форма для подачи заявки
 const applyForm = useForm({
     tournament_id: null,
-    team_id: null, // Добавляем team_id в форму
+    team_id: null,
 });
 
+// Проверяем, является ли пользователь капитаном
 const isCaptain = computed(() => {
     const selectedTeam = teams.value.find(
-        (team) => team.id === selectedTeamId.value
+        (team) => team?.id === selectedTeamId.value
     );
-    return selectedTeam && selectedTeam.captain_id === props.auth.user.id;
+    return (
+        selectedTeam &&
+        props.auth?.user &&
+        selectedTeam.captain_id &&
+        selectedTeam.captain_id === props.auth.user.id
+    );
 });
 
 // Метод для подачи заявки
 const submitApply = () => {
-    applyForm.team_id = selectedTeamId.value; // Устанавливаем team_id перед отправкой
+    if (!props.auth?.user) {
+        console.error("User not authenticated");
+        return;
+    }
+    if (!selectedTeamId.value) {
+        console.error("No team selected");
+        return;
+    }
+    applyForm.team_id = selectedTeamId.value;
     applyForm.post(route("dashboard.teams.apply", selectedTeamId.value), {
         onSuccess: () => {
             applyForm.reset();
-            selectedTeamId.value = null; // Сбрасываем выбор команды
+            selectedTeamId.value = null;
         },
         onError: (errors) => {
-            console.log(errors); // Для отладки
+            console.log(errors);
         },
     });
 };
@@ -91,31 +121,41 @@ const submitApply = () => {
                             <div class="space-y-4">
                                 <div
                                     v-for="booking in activeBookings"
-                                    :key="booking.id"
+                                    :key="booking?.id || Math.random()"
                                     class="border-b border-gray-200 pb-4"
                                 >
                                     <p class="text-sm text-gray-600">
-                                        Ресурс: {{ booking.resource.name }} ({{
-                                            booking.resource.category ||
-                                            booking.resource.name
+                                        Ресурс:
+                                        {{
+                                            booking?.resource?.name ||
+                                            "Не указан"
+                                        }}
+                                        ({{
+                                            booking?.resource?.category ||
+                                            booking?.resource?.name ||
+                                            "Не указан"
                                         }})
                                     </p>
                                     <p class="text-sm text-gray-600">
                                         Время:
                                         {{
-                                            new Date(
-                                                booking.start_time
-                                            ).toLocaleString()
+                                            booking?.start_time
+                                                ? new Date(
+                                                      booking.start_time
+                                                  ).toLocaleString()
+                                                : "Не указано"
                                         }}
                                         -
                                         {{
-                                            new Date(
-                                                booking.end_time
-                                            ).toLocaleString()
+                                            booking?.end_time
+                                                ? new Date(
+                                                      booking.end_time
+                                                  ).toLocaleString()
+                                                : "Не указано"
                                         }}
                                     </p>
                                     <p class="text-sm text-gray-600">
-                                        Стоимость: {{ booking.price }} ₽
+                                        Стоимость: {{ booking?.price || 0 }} ₽
                                     </p>
                                     <div class="mt-2 flex gap-2">
                                         <div class="flex items-center gap-2">
@@ -124,6 +164,7 @@ const submitApply = () => {
                                                     extendForm.additional_duration
                                                 "
                                                 class="rounded-md border-gray-300 text-sm"
+                                                :disabled="!booking?.id"
                                             >
                                                 <option
                                                     v-for="duration in [
@@ -145,6 +186,7 @@ const submitApply = () => {
                                                     )
                                                 "
                                                 class="rounded-md bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
+                                                :disabled="!booking?.id"
                                             >
                                                 Продлить
                                             </button>
@@ -159,6 +201,7 @@ const submitApply = () => {
                                                 )
                                             "
                                             class="rounded-md bg-red-500 px-3 py-1 text-white hover:bg-red-600"
+                                            :disabled="!booking?.id"
                                         >
                                             Отменить
                                         </button>
@@ -178,38 +221,51 @@ const submitApply = () => {
                             <div class="space-y-4">
                                 <div
                                     v-for="booking in completedBookings"
-                                    :key="booking.id"
+                                    :key="booking?.id || Math.random()"
                                     class="border-b border-gray-200 pb-4"
                                 >
                                     <p class="text-sm text-gray-600">
-                                        Ресурс: {{ booking.resource.name }} ({{
-                                            booking.resource.category ||
-                                            booking.resource.name
+                                        Ресурс:
+                                        {{
+                                            booking?.resource?.name ||
+                                            "Не указан"
+                                        }}
+                                        ({{
+                                            booking?.resource?.category ||
+                                            booking?.resource?.name ||
+                                            "Не указан"
                                         }})
                                     </p>
                                     <p class="text-sm text-gray-600">
                                         Время:
                                         {{
-                                            new Date(
-                                                booking.start_time
-                                            ).toLocaleString()
+                                            booking?.start_time
+                                                ? new Date(
+                                                      booking.start_time
+                                                  ).toLocaleString()
+                                                : "Не указано"
                                         }}
                                         -
                                         {{
-                                            new Date(
-                                                booking.end_time
-                                            ).toLocaleString()
+                                            booking?.end_time
+                                                ? new Date(
+                                                      booking.end_time
+                                                  ).toLocaleString()
+                                                : "Не указано"
                                         }}
                                     </p>
                                     <p class="text-sm text-gray-600">
-                                        Стоимость: {{ booking.price }} ₽
+                                        Стоимость: {{ booking?.price || 0 }} ₽
                                     </p>
                                     <p class="text-sm text-gray-600">
                                         Статус:
                                         {{
-                                            booking.status === "completed"
+                                            booking?.status === "completed"
                                                 ? "Завершено"
-                                                : "Отменено"
+                                                : booking?.status ===
+                                                  "cancelled"
+                                                ? "Отменено"
+                                                : "Не указан"
                                         }}
                                     </p>
                                 </div>
@@ -232,28 +288,31 @@ const submitApply = () => {
                         <div v-if="teams.length" class="space-y-4">
                             <div
                                 v-for="team in teams"
-                                :key="team.id"
+                                :key="team?.id || Math.random()"
                                 class="border-b border-gray-200 pb-4"
                             >
                                 <h4 class="text-md font-medium text-gray-700">
-                                    {{ team.name }}
+                                    {{ team?.name || "Без названия" }}
                                 </h4>
                                 <p class="text-sm text-gray-600">
                                     Капитан:
-                                    {{ team.captain?.name || "Не указан" }}
+                                    {{ team?.captain?.name || "Не указан" }}
                                 </p>
                                 <p class="text-sm text-gray-600">
                                     Участники:
                                     {{
-                                        team.users.map((u) => u.name).join(", ")
+                                        team?.users
+                                            ?.map((u) => u?.name)
+                                            .join(", ") || "Нет участников"
                                     }}
                                 </p>
                                 <p class="text-sm text-gray-600">
-                                    Код приглашения: {{ team.invite_code }}
+                                    Код приглашения:
+                                    {{ team?.invite_code || "Не указан" }}
                                 </p>
-                                <div class="mt-2 flex gap-2">
+                                <div v-if="auth?.user" class="mt-2 flex gap-2">
                                     <button
-                                        v-if="team.captain_id === auth.user.id"
+                                        v-if="team?.captain_id === auth.user.id"
                                         @click="
                                             $inertia.delete(
                                                 route(
@@ -263,13 +322,13 @@ const submitApply = () => {
                                             )
                                         "
                                         class="rounded-md bg-red-500 px-3 py-1 text-white hover:bg-red-600"
+                                        :disabled="!team?.id"
                                     >
                                         Удалить команду
                                     </button>
                                     <button
                                         v-if="
-                                            team &&
-                                            team.id &&
+                                            team?.id &&
                                             team.captain_id === auth.user.id
                                         "
                                         @click="
@@ -281,11 +340,12 @@ const submitApply = () => {
                                             )
                                         "
                                         class="rounded-md bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
+                                        :disabled="!team?.id"
                                     >
                                         Редактировать
                                     </button>
                                     <button
-                                        v-if="team.captain_id !== auth.user.id"
+                                        v-if="team?.captain_id !== auth.user.id"
                                         @click="
                                             $inertia.post(
                                                 route(
@@ -295,16 +355,22 @@ const submitApply = () => {
                                             )
                                         "
                                         class="rounded-md bg-red-500 px-3 py-1 text-white hover:bg-red-600"
+                                        :disabled="!team?.id"
                                     >
                                         Выйти из команды
                                     </button>
                                     <button
-                                        v-if="team.captain_id === auth.user.id"
+                                        v-if="team?.captain_id === auth.user.id"
                                         @click="selectedTeamId = team.id"
                                         class="rounded-md bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
+                                        :disabled="!team?.id"
                                     >
                                         Подать заявку
                                     </button>
+                                </div>
+                                <div v-else class="text-sm text-gray-600">
+                                    Пожалуйста, войдите в систему, чтобы
+                                    управлять командами.
                                 </div>
                             </div>
                         </div>
@@ -360,10 +426,10 @@ const submitApply = () => {
                                     </option>
                                     <option
                                         v-for="tournament in tournaments"
-                                        :key="tournament.id"
-                                        :value="tournament.id"
+                                        :key="tournament?.id || Math.random()"
+                                        :value="tournament?.id"
                                     >
-                                        {{ tournament.name }}
+                                        {{ tournament?.name || "Без названия" }}
                                     </option>
                                 </select>
                             </div>

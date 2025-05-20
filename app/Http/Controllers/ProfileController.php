@@ -14,15 +14,41 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Log;
+use Inertia\Response as InertiaResponse;
 
 class ProfileController extends Controller
 {
     /**
-     * Display the user's teams.
+     * Display the user's dashboard.
      */
-    public function indexTeams(Request $request): Response
+    public function dashboard(Request $request): Response
     {
         $user = $request->user();
+
+        $user->load(['bookings' => function ($query) {
+            $query->with('resource');
+        }, 'teams' => function ($query) {
+            $query->with('users', 'captain');
+        }]);
+
+        return Inertia::render('Dashboard', [
+            'bookings' => $user->bookings,
+            'teams' => $user->teams,
+            'tournaments' => Tournament::where('mode', 'team')->get(),
+        ]);
+    }
+
+    /**
+     * Display the user's teams.
+     */
+    public function indexTeams(Request $request): InertiaResponse|RedirectResponse
+    {
+        $user = $request->user();
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Пожалуйста, войдите в систему.');
+        }
+
         $teams = $user->teams()->with('users', 'captain')->get();
         return Inertia::render('Teams/Index', [
             'teams' => $teams,
@@ -35,7 +61,7 @@ class ProfileController extends Controller
     public function edit(Request $request): Response
     {
         $user = $request->user();
-        return Inertia::render('Dashboard', [
+        return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
             'bookings' => $user->bookings,
@@ -49,13 +75,19 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
-
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $user = $request->user();
+        if (!$user) {
+            Log::error('User is not authenticated in ProfileController@update');
+            return redirect()->route('login')->with('error', 'Пожалуйста, войдите в систему.');
         }
 
-        $request->user()->save();
+        $user->fill($request->validated());
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
 
         return Redirect::route('dashboard')->with('success', 'Профиль обновлён.');
     }
@@ -65,16 +97,18 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = $request->user();
+        if (!$user) {
+            Log::error('User is not authenticated in ProfileController@destroy');
+            return redirect()->route('login')->with('error', 'Пожалуйста, войдите в систему.');
+        }
+
         $request->validate([
             'password' => ['required', 'current_password'],
         ]);
 
-        $user = $request->user();
-
         Auth::logout();
-
         $user->delete();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
@@ -84,13 +118,19 @@ class ProfileController extends Controller
     /**
      * Show form to create a team.
      */
-    public function createTeam()
+    public function createTeam(): Response|RedirectResponse
     {
-        $users = User::where('id', '!=', auth()->id())->get();
         $user = auth()->user();
+        if (!$user) {
+            Log::error('User is not authenticated in ProfileController@createTeam');
+            return redirect()->route('login')->with('error', 'Пожалуйста, войдите в систему.');
+        }
+
+        $users = User::where('id', '!=', $user->id)->get();
         if ($user->teams()->exists()) {
             return Redirect::route('dashboard')->with('error', 'Вы уже состоите в команде. Выйдите из текущей команды, чтобы создать новую.');
         }
+
         return Inertia::render('Teams/CreateTeam', [
             'users' => $users->map(fn($user) => [
                 'id' => $user->id,
@@ -102,9 +142,14 @@ class ProfileController extends Controller
     /**
      * Store a new team.
      */
-    public function storeTeam(Request $request)
+    public function storeTeam(Request $request): RedirectResponse
     {
         $user = auth()->user();
+        if (!$user) {
+            Log::error('User is not authenticated in ProfileController@storeTeam');
+            return redirect()->route('login')->with('error', 'Пожалуйста, войдите в систему.');
+        }
+
         if ($user->teams()->exists()) {
             return Redirect::route('dashboard')->with('error', 'Вы уже состоите в команде. Выйдите из текущей команды, чтобы создать новую.');
         }
@@ -123,10 +168,10 @@ class ProfileController extends Controller
             'logo' => $request->logo,
             'description' => $request->description,
             'max_players' => $request->max_players,
-            'captain_id' => auth()->id(),
+            'captain_id' => $user->id,
         ]);
 
-        $userIds = array_merge([auth()->id()], $request->user_ids);
+        $userIds = array_merge([$user->id], $request->user_ids);
         $team->users()->attach($userIds);
 
         return Redirect::route('dashboard')->with('success', 'Команда создана!');
@@ -135,7 +180,7 @@ class ProfileController extends Controller
     /**
      * Show form to join a team.
      */
-    public function joinTeamForm()
+    public function joinTeamForm(): Response
     {
         return Inertia::render('Teams/Join');
     }
@@ -143,14 +188,22 @@ class ProfileController extends Controller
     /**
      * Join a team using an invite code.
      */
-    public function joinTeam(Request $request)
+    public function joinTeam(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+        if (!$user) {
+            Log::error('User is not authenticated in ProfileController@joinTeam');
+            return redirect()->route('login')->with('error', 'Пожалуйста, войдите в систему.');
+        }
+
         $request->validate([
             'invite_code' => 'required|string|exists:teams,invite_code',
         ]);
 
         $team = Team::where('invite_code', $request->invite_code)->first();
-        $user = auth()->user();
+        if (!$team) {
+            return redirect()->back()->with('error', 'Неверный код приглашения.');
+        }
 
         if ($team->isFull()) {
             return redirect()->back()->with('error', 'Команда заполнена.');
@@ -167,22 +220,25 @@ class ProfileController extends Controller
     /**
      * Leave a team.
      */
-    public function leaveTeam($teamId)
+    public function leaveTeam($teamId): RedirectResponse
     {
-        $team = Team::findOrFail($teamId);
         $user = auth()->user();
+        if (!$user) {
+            Log::error('User is not authenticated in ProfileController@leaveTeam');
+            return redirect()->route('login')->with('error', 'Пожалуйста, войдите в систему.');
+        }
+
+        $team = Team::findOrFail($teamId);
 
         if (!$team->users()->where('user_id', $user->id)->exists()) {
             return Redirect::route('dashboard')->with('error', 'Вы не состоите в этой команде.');
         }
 
         if ($team->captain_id === $user->id) {
-            // Если капитан уходит, передаём роль следующему пользователю
             $newCaptain = $team->users()->where('id', '!=', $user->id)->first();
             if ($newCaptain) {
                 $team->update(['captain_id' => $newCaptain->id]);
             } else {
-                // Если больше нет участников, удаляем команду
                 $team->delete();
                 return Redirect::route('dashboard')->with('success', 'Команда удалена, так как не осталось участников.');
             }
@@ -195,10 +251,15 @@ class ProfileController extends Controller
     /**
      * Delete a team (only for captain).
      */
-    public function deleteTeam($teamId)
+    public function deleteTeam($teamId): RedirectResponse
     {
-        $team = Team::findOrFail($teamId);
         $user = auth()->user();
+        if (!$user) {
+            Log::error('User is not authenticated in ProfileController@deleteTeam');
+            return redirect()->route('login')->with('error', 'Пожалуйста, войдите в систему.');
+        }
+
+        $team = Team::findOrFail($teamId);
 
         if ($team->captain_id !== $user->id) {
             return Redirect::route('dashboard')->with('error', 'Только капитан может удалить команду.');
@@ -211,15 +272,19 @@ class ProfileController extends Controller
     /**
      * Show form to edit a team.
      */
-    public function editTeam(Team $team)
+    public function editTeam(Team $team): Response|RedirectResponse
     {
         $user = auth()->user();
+        if (!$user) {
+            Log::error('User is not authenticated in ProfileController@editTeam');
+            return redirect()->route('login')->with('error', 'Пожалуйста, войдите в систему.');
+        }
 
         if ($team->captain_id !== $user->id) {
             return Redirect::route('dashboard')->with('error', 'Только капитан может редактировать команду.');
         }
 
-        $team->load('users'); // Ensure users relationship is loaded
+        $team->load('users');
         $availableUsers = User::whereNotIn('id', $team->users->pluck('id')->push($user->id))->get();
 
         return Inertia::render('Teams/EditTeam', [
@@ -234,10 +299,15 @@ class ProfileController extends Controller
     /**
      * Update a team.
      */
-    public function updateTeam(Request $request, $teamId)
+    public function updateTeam(Request $request, $teamId): RedirectResponse
     {
-        $team = Team::findOrFail($teamId);
         $user = auth()->user();
+        if (!$user) {
+            Log::error('User is not authenticated in ProfileController@updateTeam');
+            return redirect()->route('login')->with('error', 'Пожалуйста, войдите в систему.');
+        }
+
+        $team = Team::findOrFail($teamId);
 
         if ($team->captain_id !== $user->id) {
             return Redirect::route('dashboard')->with('error', 'Только капитан может редактировать команду.');
@@ -286,14 +356,15 @@ class ProfileController extends Controller
     /**
      * Apply for a tournament with a team.
      */
-    public function apply(Request $request, $teamId)
+    public function apply(Request $request, $teamId): RedirectResponse
     {
-        $team = Team::findOrFail($teamId);
+        $user = auth()->user();
+        if (!$user) {
+            Log::error('User is not authenticated in ProfileController@apply');
+            return redirect()->route('login')->with('error', 'Пожалуйста, войдите в систему.');
+        }
 
-        // Removed captain check temporarily
-        // if ($team->captain_id !== auth()->id()) {
-        //     return redirect()->back()->with('error', 'Только капитан может подать заявку.');
-        // }
+        $team = Team::findOrFail($teamId);
 
         $request->validate([
             'tournament_id' => 'required|exists:tournaments,id',
@@ -324,9 +395,17 @@ class ProfileController extends Controller
         return Redirect::route('dashboard')->with('success', 'Заявка подана!');
     }
 
-    public function submitApplication(Request $request)
+    /**
+     * Submit an application for a tournament.
+     */
+    public function submitApplication(Request $request): RedirectResponse
     {
         $user = Auth::user();
+        if (!$user) {
+            Log::error('User is not authenticated in ProfileController@submitApplication');
+            return redirect()->route('login')->with('error', 'Пожалуйста, войдите в систему.');
+        }
+
         $request->validate([
             'team_id' => 'required|exists:teams,id',
             'tournament_id' => 'required|exists:tournaments,id',
@@ -335,22 +414,18 @@ class ProfileController extends Controller
         $team = Team::findOrFail($request->team_id);
         $tournament = Tournament::findOrFail($request->tournament_id);
 
-        // Check if the user is part of the team (optional, can be removed for now)
         if (!$team->users()->where('user_id', $user->id)->exists()) {
             return redirect()->back()->with('error', 'Вы не состоите в этой команде.');
         }
 
-        // Check tournament mode
         if ($tournament->mode !== 'team') {
             return redirect()->back()->with('error', 'Этот турнир не для команд.');
         }
 
-        // Check if tournament is full
         if ($tournament->isFullForTeams()) {
             return redirect()->back()->with('error', 'Турнир заполнен.');
         }
 
-        // Check for existing application
         $existingApplication = Application::where('team_id', $team->id)
             ->where('tournament_id', $tournament->id)
             ->first();
@@ -358,7 +433,6 @@ class ProfileController extends Controller
             return redirect()->back()->with('error', 'Заявка на этот турнир уже подана.');
         }
 
-        // Create the application
         $application = Application::create([
             'team_id' => $team->id,
             'tournament_id' => $tournament->id,

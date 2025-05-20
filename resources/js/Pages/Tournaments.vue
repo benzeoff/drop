@@ -160,7 +160,7 @@ const goToPage = (page) => {
                         <label
                             for="game-filter"
                             class="text-black dark:text-white mr-2"
-                            >Ф endowment по игре:</label
+                            >Турнир по игре:</label
                         >
                         <select
                             id="game-filter"
@@ -337,45 +337,6 @@ const goToPage = (page) => {
 
                 <!-- Футер -->
                 <footer class="py-16 text-sm text-black dark:text-white/70">
-                    <div
-                        class="flex flex-col lg:flex-row justify-between items-start gap-8"
-                    >
-                        <div class="flex-shrink-0">
-                            <iframe
-                                src="https://yandex.com/map-widget/v1/?um=constructor%3Ayour_map_id&z=15&ll=50.836496%2C61.667614&mode=placemark"
-                                width="300"
-                                height="200"
-                                frameborder="0"
-                                class="rounded-lg"
-                            ></iframe>
-                        </div>
-                        <div class="flex flex-col items-start gap-4">
-                            <div class="flex items-center gap-2">
-                                <img
-                                    src="/images/social/tel.png"
-                                    alt="Phone Icon"
-                                    class="w-6 h-6"
-                                />
-                                <a
-                                    href="tel:+79042068089"
-                                    class="underline hover:text-[#FF2D20]"
-                                >
-                                    +7 (904) 206-80-89
-                                </a>
-                            </div>
-                            <a
-                                href="https://vk.com/dropgames11?from=groups"
-                                target="_blank"
-                                class="flex items-center gap-2"
-                            >
-                                <img
-                                    src="/images/social/vk.png"
-                                    alt="VK Icon"
-                                    class="w-6 h-6"
-                                />
-                            </a>
-                        </div>
-                    </div>
                     <div class="mt-8 text-center">
                         Компьютерный клуб © <span ref="currentYearRef"></span>
                     </div>
